@@ -1,32 +1,25 @@
-# Sample workflow for building and deploying a Hugo site to GitHub Pages
+cat > .github/workflows/hugo.yaml << 'EOF'
 name: Deploy Hugo site to Pages
 
 on:
-  # Запуск при push в ветку main
   push:
     branches:
       - main
-
-  # Возможность запустить вручную из вкладки Actions
   workflow_dispatch:
 
-# Права доступа, необходимые для деплоя на GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Разрешить только один одновременный деплой
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
-# Переменные окружения
 env:
   HUGO_VERSION: 0.128.0
 
 jobs:
-  # ---------- Сборка сайта ----------
   build:
     runs-on: ubuntu-latest
     env:
@@ -68,3 +61,15 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./public
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+EOF
